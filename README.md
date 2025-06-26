@@ -94,10 +94,10 @@ cd frontend
 
 This project was developed as a graduation project by:
 
-- Umutcan Çelik  
+- Efekan Uysal
 - Ali Fırat Özdemir  
 - Mert Damburacı  
-- Efekan Uysal
+- Umutcan Çelik 
 
 > Supervised by: **İdil Candan**  
 > Middle East Technical University – Northern Cyprus Campus
