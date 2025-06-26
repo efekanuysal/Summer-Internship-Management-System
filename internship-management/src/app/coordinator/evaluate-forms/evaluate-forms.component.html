@@ -1,0 +1,391 @@
+<div
+  class="min-h-screen flex flex-col items-center p-6"
+  [ngClass]="{
+    'bg-gray-100 text-gray-800': !isDarkMode,
+    'bg-gray-900 text-gray-200': isDarkMode
+  }"
+>
+  <h1 class="text-3xl font-bold mb-6">Evaluate Trainee Forms</h1>
+  <div class="w-full max-w-6xl overflow-x-auto mt-4">
+    <button
+      class=" py-2  bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 "
+      (click)="getSelectedForms()"
+    >
+      Download as Excel
+    </button>
+  </div>
+  <!-- Arama Çubuğu -->
+  <div class="w-full max-w-6xl mt-4 mb-4">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="Search forms..."
+      class="w-full p-2 border rounded
+             bg-white text-gray-800
+             dark:bg-gray-700 dark:text-gray-100
+             focus:outline-none"
+    />
+  </div>
+
+  <!-- Table for Displaying Forms -->
+  <div class="w-full max-w-6xl overflow-x-auto mt-4">
+
+    <table class=" w-full border-collapse text-left bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+      <thead class="bg-gray-100 dark:bg-gray-700">
+        <tr>
+          <th class="border-b p-2">Name</th>
+          <th class="border-b p-2">Surname</th>
+          <th class="border-b p-2">Student No</th>
+          <th class="border-b p-2">Course</th>
+          <th class="border-b p-2">Evaluating Faculty</th>
+          <th class="border-b p-2">Coordinator Approval</th>
+          <th class="border-b p-2">Company Approval</th>
+          <th class="border-b p-2">Supervisor Evaluation</th>
+          <th class="border-b p-2 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- sortedForms yerine filteredForms kullanılıyor -->
+        <tr
+          *ngFor="let form of filteredForms; let i = index"
+          class="hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
+
+          <td class="border-b p-2">{{ form.name }}</td>
+          <td class="border-b p-2">{{ form.lastName }}</td>
+          <td class="border-b p-2">{{ form.username }}</td>
+          <td class="border-b p-2">{{ form.code }}</td>
+          @if (form.evaluatingFacultyMember == 'defaultEvaluator') {
+            <td class="border-b p-2"></td>
+          }
+          @else {
+              <td class="border-b p-2">{{ form.evaluatingFacultyMember }}</td>
+          }
+
+          @if (form.status == 'Coordinator Approval Waiting') {
+            <td class="border-b p-2 negative-status">Not Approved</td>
+          } @else if (form.status == 'RejectedByCoordinator'){
+            <td class="border-b p-2 negative-status">Rejected</td>
+          }
+          @else {
+            <td class="border-b p-2 positive-status">Approved</td>
+          }
+          @if (
+            form.status == "Company Approval Waiting" ||
+            form.status == 'Coordinator Approval Waiting'
+          ) {
+            <td class="border-b p-2 negative-status">Not Approved</td>
+          }
+          @else if (form.status == 'RejectedByCoordinator'){
+            <td class="border-b p-2 negative-status">Not Approved</td>
+          }
+          @else {
+            <td class="border-b p-2 positive-status">{{ form.status }}</td>
+          }
+          <td *ngIf="!(evaluationStatusMap[form.id] | async); else submittedTpl" class="border-b p-2 negative-status">
+            Not Submitted
+          </td>
+          <ng-template #submittedTpl>
+            <td class="border-b p-2 positive-status">
+              <a
+                href="#"
+                (click)="openCompanyEval(form); $event.preventDefault()"
+                class="positive-status hover:underline"
+              >
+                Submitted
+              </a>
+            </td>
+          </ng-template>
+
+          <td class="border-b p-2">
+            <div class="flex space-x-2">
+              <button
+                class="px-4 py-2 ml-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                (click)="openDetails(form)"
+              >
+                Details
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div
+    *ngIf="selectedForm"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="w-full max-w-3xl p-6 rounded-lg bg-white overflow-y-auto mt-6 relative dark:bg-gray-800 shadow-lg"
+    >
+      <button
+        class="absolute bg-white top-4 right-4 text-xl font-semibold text-gray-500 hover:text-gray-800"
+        (click)="closeModal()"
+      >
+        X
+      </button>
+
+      <div class="w-full">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
+          Trainee Information Form Details
+        </h2>
+
+        <div class="grid grid-cols-2 gap-4 mt-8 mb-8">
+          <div>
+            <strong>Student Name:</strong> {{ selectedForm.name }}
+            {{ selectedForm.lastName }}
+          </div>
+          <div>
+            <strong>Student Id:</strong> {{ selectedForm.username }}
+          </div>
+          <div>
+            <strong>Course Code:</strong> {{ selectedForm.code }}
+          </div>
+          <div><strong>Type:</strong> {{ selectedForm.type }}</div>
+          <div>
+            <strong>Date:</strong>
+            {{ selectedForm.startDate | date: 'yyyy-MM-dd' }} -
+            {{ selectedForm.endDate | date: 'yyyy-MM-dd' }}
+          </div>
+          <div>
+            <strong>Semester:</strong> {{ selectedForm.semester }}
+          </div>
+          <div>
+            <strong>Supervisor Name:</strong> {{ selectedForm.supervisorName }}
+            {{ selectedForm.supervisorSurname }}
+          </div>
+          <div>
+            <strong>Health Insurance:</strong>
+            {{ selectedForm.healthInsurance == false ? 'No' : 'Yes' }}
+          </div>
+          <div>
+            <strong>Company Name:</strong> {{ selectedForm.companyUserName }}
+          </div>
+          <div>
+            <strong>Company Branch Name:</strong> {{ selectedForm.branchName }}
+          </div>
+          <div>
+            <strong>Company Phone:</strong> {{ selectedForm.companyPhone }}
+          </div>
+          <div>
+            <strong>Company Email:</strong> {{ selectedForm.companyEmail }}
+          </div>
+          <div>
+            <strong>Company Country:</strong> {{ selectedForm.country }}
+          </div>
+          <div>
+            <strong>Company City:</strong> {{ selectedForm.city }}
+          </div>
+          <div>
+            <strong>Company District:</strong> {{ selectedForm.district }}
+          </div>
+          <div>
+            <strong>Company Address:</strong> {{ selectedForm.companyAddress }}
+          </div>
+          <div>
+            <strong>Position:</strong> {{ selectedForm.position }}
+          </div>
+          @if (selectedForm.evaluatingFacultyMember == 'defaultEvaluator') {
+            <div><strong>Evaluating Faculty:</strong> Not Assigned</div>
+          }
+          @else {
+            <div>
+              <strong>Evaluating Faculty:</strong>
+              {{ selectedForm.evaluatingFacultyMember }}
+            </div>
+          }
+        </div>
+        <!-- Show this only if status is 'Coordinator Approval Waiting' -->
+        <div
+          class="mt-6 text-right flex items-center justify-center"
+          *ngIf="selectedForm.status === 'Coordinator Approval Waiting'"
+        >
+          <button
+            class="px-4 py-2 mr-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            (click)="approveForm(selectedForm)"
+          >
+            Approve
+          </button>
+          <button
+            class="px-4 py-2 ml-4 bg-red-600 text-white rounded-lg hover:bg-red-700"
+            (click)="rejectForm(selectedForm)"
+          >
+            Reject
+          </button>
+        </div>
+        @if (selectedForm.status === 'RejectedByCoordinator'){
+          <div class="mt-6 text-center text-red-700 font-semibold text-lg">
+            Rejected
+          </div>
+        }
+        @else if(selectedForm.status !== 'Coordinator Approval Waiting'){
+        <!-- Show this if status is NOT 'Coordinator Approval Waiting' -->
+        <div class="mt-6 text-center text-green-600 font-semibold text-lg">
+          Approved
+        </div>}
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Viewing Form Details -->
+  <div
+    *ngIf="isDetailsVisible"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    (click)="closeDetails()"
+  >
+    <div
+      class="w-full max-w-3xl p-6 rounded-lg bg-white overflow-y-auto mt-6 relative dark:bg-gray-800 shadow-lg"
+    >
+      <button
+        class="absolute bg-white top-4 right-4 text-xl font-semibold text-gray-500 hover:text-gray-800"
+        (click)="closeModal()"
+      >
+        FKLANKLFNAKN
+      </button>
+      <div class="w-full">
+        <h2 class="text-xl font-bold mb-4">Form Details</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium">Student No</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Name</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Surname</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Course</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">ID No (TC NO)</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Date of Birth</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Nationality</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Telephone Number</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Department</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Course Registration Semester</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Internship Start Date</label>
+            <p class="mt-1"></p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Internship Finish Date</label>
+            <p class="mt-1"></p>
+          </div>
+        </div>
+        <div class="flex justify-end mt-4">
+          <button
+            class="px-4 py-2 rounded-lg hover:bg-gray-300 focus:outline-none"
+            [ngClass]="{
+              'bg-gray-200 text-gray-800': !isDarkMode,
+              'bg-gray-700 text-gray-300': isDarkMode
+            }"
+            (click)="closeDetails()"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div
+      *ngIf="showCompanyEvaluation"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4  "
+    >
+  <div class=" mt-40 items-center mb-24 w-full p-6 rounded-lg shadow-md bg-white dark:bg-gray-800 max-w-5xl">
+
+
+      <div class="flex flex-row items-center">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
+          Company Evaluation
+        </h2>
+          <button class="ml-auto" (click)="closeCompanyEvaluation()">
+            X
+          </button>
+
+
+      </div>
+      <div class=" items-center  w-full p-6 rounded-lg shadow-md bg-white dark:bg-gray-800 max-w-5xl">
+        <form >
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-white">1. Attendance?</label>
+            <div class="flex text-gray-800 dark:text-gray-200 space-x-4 mt-2">
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="attendance" (click)="preventChange($event)" [(ngModel)]="attendance" value="Excellent"  > Excellent</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="attendance" (click)="preventChange($event)" [(ngModel)]="attendance" value="Good"  > Good</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="attendance" (click)="preventChange($event)" [(ngModel)]="attendance" value="Satisfactory"  > Satisfactory</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="attendance" (click)="preventChange($event)" [(ngModel)]="attendance" value="Unsatisfactory"  > Unsatisfactory</label>
+            </div>
+            <input type="hidden" name="attendance" [value]="attendance">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-white">2. Diligence and Enthusiasm</label>
+            <div class="flex text-gray-800 dark:text-gray-200 space-x-4 mt-2">
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="diligence" (click)="preventChange($event)" [checked]="diligence === 'Excellent'"  [(ngModel)]="diligence" value="Excellent"   > Excellent</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="diligence" (click)="preventChange($event)" [checked]="diligence === 'Good'" [(ngModel)]="diligence" value="Good"   > Good</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="diligence" (click)="preventChange($event)" [checked]="diligence === 'Satisfactory'" [(ngModel)]="diligence" value="Satisfactory"   > Satisfactory</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="diligence" (click)="preventChange($event)" [checked]="diligence === 'Unsatisfactory'" [(ngModel)]="diligence" value="Unsatisfactory"   > Unsatisfactory </label>
+            </div>
+            <input type="hidden" name="diligence" [value]="diligence">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-white">3. Contribution to work Environment?</label>
+            <div class="flex text-gray-800 dark:text-gray-200 space-x-4 mt-2">
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="contribution" (click)="preventChange($event)" [(ngModel)]="contribution" value="Excellent"   > Excellent</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="contribution" (click)="preventChange($event)" [(ngModel)]="contribution" value="Good"   > Good</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="contribution" (click)="preventChange($event)" [(ngModel)]="contribution" value="Satisfactory"   > Satisfactory</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="contribution" (click)="preventChange($event)" [(ngModel)]="contribution" value="Unsatisfactory"   > Unsatisfactory</label>
+            </div>
+            <input type="hidden" name="contribution" [value]="contribution">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-white">4. Overall Performance</label>
+            <div class="flex space-x-4 mt-2">
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="performance" (click)="preventChange($event)" [(ngModel)]="performance" value="Excellent"   > Excellent</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="performance" (click)="preventChange($event)" [(ngModel)]="performance" value="Good"   > Good</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="performance" (click)="preventChange($event)" [(ngModel)]="performance" value="Satisfactory"   > Satisfactory</label>
+              <label class="text-gray-800 dark:text-gray-200"><input type="radio" name="performance" (click)="preventChange($event)" [(ngModel)]="performance" value="Unsatisfactory"   > Unsatisfactory</label>
+            </div>
+            <input type="hidden" name="performance" [value]="performance">
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-gray-800 dark:text-white">Additional Comments:</label>
+            <textarea
+              [(ngModel)]="comments"
+              name="comments"
+              class="w-full p-2 border rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white"
+              rows="4"
+              readonly
+            ></textarea>
+          </div>
+
+        </form>
+      </div>
+      </div>
+    </div>
+</div>

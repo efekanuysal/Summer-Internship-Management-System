@@ -1,0 +1,92 @@
+<div class="min-h-screen flex items-start justify-center p-8 overflow-auto">
+  <div class="w-full max-w-6xl bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Open Internship Offers</h2>
+
+    <div *ngIf="isLoading" class="text-center text-gray-500 dark:text-gray-300 my-8 text-lg">
+      Loading...
+    </div>
+
+    <div *ngIf="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        *ngFor="let offer of internshipOffers"
+        class="bg-white dark:bg-gray-900 rounded-lg shadow-md cursor-pointer hover:shadow-xl transition"
+        (click)="openDetails(offer)">
+
+        <img
+          [src]="'http://localhost:8080/api/internship-offers/' + offer.offerId + '/image'"
+          (error)="onImageError($event)"
+          alt="Company Logo"
+          class="w-full h-40 object-contain border-b rounded-t-lg"
+        />
+
+        <div class="p-4">
+          <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ offer.position }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-300">{{ offer.companyBranchName }} - {{ offer.department }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"> Offer Start : {{ offer.startDate }} ➤ Offer End : {{ offer.endDate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ MODAL -->
+    <div *ngIf="selectedOffer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-6xl mx-4 md:mx-auto max-h-[90vh] overflow-y-auto"
+      >        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+
+          <!-- Sol: Görsel -->
+          <div class="flex items-center justify-center">
+            <img
+              [src]="'http://localhost:8080/api/internship-offers/' + selectedOffer.offerId + '/image'"
+              class="w-full h-80 object-contain border rounded"
+              onerror="this.src='assets/Default-Logo.png'"
+              alt="Offer Image"
+            />
+          </div>
+
+          <!-- Sağ: Bilgiler -->
+        <div class="pr-2 max-h-[75vh] overflow-y-auto">
+
+
+            <div class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <p><strong>Company:</strong> {{ selectedOffer.companyBranchName }}</p>
+              <p><strong>Department:</strong> {{ selectedOffer.department }}</p>
+              <p><strong>Start:</strong> {{ selectedOffer.startDate }}</p>
+              <p><strong>End:</strong> {{ selectedOffer.endDate }}</p>
+              <p><strong>Status:</strong> OPEN</p>
+            </div>
+
+            <hr class="my-4 border-gray-300 dark:border-gray-600" />
+
+            <div *ngIf="selectedOffer.description" class="mb-4">
+              <h4 class="text-md font-semibold text-gray-800 dark:text-white">What is this internship?</h4>
+              <p class="text-sm text-gray-700 dark:text-gray-300">{{ selectedOffer.description }}</p>
+            </div>
+
+          <!-- ✅ Düzenlenmiş scrollable details -->
+          <div *ngIf="selectedOffer.details"
+               class="internship-details text-sm text-gray-700 dark:text-gray-300">
+            <h4 class="text-md font-semibold text-gray-800 dark:text-white mb-2">Responsibilities & Requirements</h4>
+            <div [innerHTML]="selectedOffer.details"></div>
+          </div>
+
+            <div class="flex justify-between mt-6">
+              <button
+                class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                (click)="closeDetails()"
+              >
+                Close
+              </button>
+
+              <button
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded disabled:opacity-50"
+                (click)="applyToOffer(selectedOffer.offerId)"
+                [disabled]="appliedOfferIds.includes(selectedOffer.offerId)">
+                {{ appliedOfferIds.includes(selectedOffer.offerId) ? 'Applied' : 'Apply Now' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
