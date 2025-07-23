@@ -1,4 +1,4 @@
-# Internship Management System – METU NCC 🎓
+# Internship Management System – METU 🎓
 
 A web-based platform designed to streamline the summer internship process at METU Northern Cyprus Campus. This system simplifies every step for students, instructors, coordinators, companies, and student affairs – from applications to evaluations – all in one place.
 
@@ -22,6 +22,10 @@ A web-based platform designed to streamline the summer internship process at MET
   - Student Affairs
 
 ---
+
+## ✨ Demonstration Video
+
+- https://youtu.be/pNiYsTRhqxQ?si=wjgtMupbUxgoPnk_
 
 ## 🚀 Technologies Used
 
